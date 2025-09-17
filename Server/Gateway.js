@@ -5,7 +5,6 @@ const express = require("express");
 const { join } = require("path");
 const { generateString } = require("./Utils/Utils"); 
 const Postgre = require("./Database/Postgre");
-const { SQLError } = require("./Structures/Error");
 const URL = Constants.URL;
 
 class Gateway {
@@ -20,13 +19,18 @@ class Gateway {
         }));
         server.get("/api/createGateway", async (req, res)=> {
             try {
-                
+                let data = req.body;
+                if (!data.redirect){
+                    res.status(401).json({error: "RequestError | MISSING REDIRECT PARAMETER"});
+                };
+                let response = await this.createGateway(data.redirect);
+                res.status(200).json({response});
+                console.log(`log: Gateway Created - ${response[0].id} - ${new Date().toString()}`);
             } catch (e) {
                 console.error(e);
-                res.json(new SQLError(e));
+                res.status(500).json({error: "SQLError | ERROR LOGGED"});
             }
         });
-
         server.use(express.static(join(process.cwd(), "Client", "dist")));
         console.log("Gateway initialized");
     };
