@@ -5,7 +5,7 @@
   "main": "Server/Server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "cd Client && npm run build && cd Desktop/Projects/Url-Buddy"
+    "build": "cd Client && npm run build && cd && cd Desktop/Projects/URL-Buddy"
   },
   "repository": {
     "type": "git",
