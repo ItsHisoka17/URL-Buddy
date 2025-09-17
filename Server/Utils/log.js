@@ -4,6 +4,7 @@
 
 const fs = require("fs");
 const { COLORS } = require("../Constants/Constants");
+const { formatDate } = require("./Utils");
 const path = require("path");
 /**
  * 
@@ -12,10 +13,6 @@ const path = require("path");
 function log({message, level="info", logToConsole=true, dir="server"}){
     if (!["info","error", "warn"].includes(level)){
         throw new Error("Invalid [level] Parameter");
-    };
-    function formatDate(){
-        const date = new Date();
-        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}:${String(date.getSeconds()).padStart(2, "0")}`;
     };
     let date = formatDate();
     let file = path.join(process.cwd(), "logs", `${dir}.log`);
