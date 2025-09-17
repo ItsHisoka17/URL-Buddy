@@ -19,3 +19,10 @@ export interface UrlRow {
 }
 
 export type Row<T= any> = T[];
+
+export interface LogData {
+    message: string,
+    level?: "info" | "warn" | "error",
+    logToConsole?: boolean
+    dir?: string
+}

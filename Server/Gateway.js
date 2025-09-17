@@ -3,7 +3,7 @@ const cookies = require("cookie-parser");
 const Constants = require("./Constants/Constants");
 const express = require("express");
 const { join } = require("path");
-const { generateString } = require("./Utils/Utils"); 
+const { log, generateString } = require("./Utils/Utils")
 const Postgre = require("./Database/Postgre");
 const URL = Constants.URL;
 
@@ -25,14 +25,23 @@ class Gateway {
                 };
                 let response = await this.createGateway(data.redirect);
                 res.status(200).json({response});
-                console.log(`log: Gateway Created - ${response[0].id} - ${new Date().toString()}`);
+                log({
+                    message: `Gateway Created ${response[0].id}`
+                })
             } catch (e) {
                 console.error(e);
+                log({
+                    message: e.message, 
+                    level: "error", 
+                    logToConsole: false
+                })
                 res.status(500).json({error: "SQLError | ERROR LOGGED"});
             }
         });
         server.use(express.static(join(process.cwd(), "Client", "dist")));
-        console.log("Gateway initialized");
+        log({
+            message: "Gateway Started"
+        });
     };
 
     async createGateway(redirectURL){
@@ -45,7 +54,6 @@ class Gateway {
                 }
             });
             let truthy = (res&&res[0].id)?true:res;
-            console.log(truthy);
             return truthy;
         };
         let createData = async ()=> {
