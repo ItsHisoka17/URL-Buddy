@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { createGateway } from "./api";
+import { createGateway } from "./api/index";
+import { log } from "./api/log"
 import { useToast } from "./components/ToastContext";
 import ResultCard from "./components/ResultCard";
 
@@ -19,7 +20,7 @@ export default function App() {
     toast.remove && null;
 
     if (!isValidUrl(redirect)) {
-      toast.push("Please enter a valid redirect URL (include https://)", { type: "error" });
+      toast.push("Please enter a valid redirect URL", { type: "error" });
       return;
     }
 
@@ -46,6 +47,7 @@ export default function App() {
       const data = await createGateway(payload);
       setGateway(data);
       toast.push("Short link created!", { type: "success" });
+      log(`Gateway Created ${payload}`);
       try { await navigator.clipboard.writeText(`${window.location.origin}/${data.path}`); toast.push("Copied to clipboard", { type: "info", duration: 2500 }); } catch {}
       setRedirect("");
       setCustomPath("");
