@@ -1,5 +1,6 @@
 const cors = require("cors");
 const cookies = require("cookie-parser");
+const bodyparser = require("body-parser").json();
 const Constants = require("./Constants/Constants");
 const express = require("express");
 const { join } = require("path");
@@ -17,11 +18,11 @@ class Gateway {
             origin: URL,
             credentials: true
         }));
-        server.get("/api/createGateway", async (req, res)=> {
+        server.post("/api/createGateway", bodyparser, async (req, res)=> {
             try {
                 let data = req.body;
                 if (!data.redirect){
-                    res.status(401).json({error: "RequestError | MISSING REDIRECT PARAMETER"});
+                    res.status(400).json({error: "RequestError | Missing [redirect] Parameter"});
                 };
                 let response = await this.createGateway(data.redirect);
                 res.status(200).json({response});
@@ -38,6 +39,20 @@ class Gateway {
                 res.status(500).json({error: "SQLError | ERROR LOGGED"});
             }
         });
+
+        server.post("/api/log", bodyparser, (req, res)=> {
+            if(!req.body.message){
+                res.status(400).json({error: "RequestError | Missing [message] Parameter"});
+            };
+            if (typeof req.body.message==="string"){
+                log({
+                    message: req.body.message,
+                    dir: "client"
+                });
+                res.status(200).json({message: "Log Successful"});
+            };
+        });
+        
         server.use(express.static(join(process.cwd(), "Client", "dist")));
         log({
             message: "Gateway Started"

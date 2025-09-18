@@ -21,8 +21,7 @@ class Postgre {
     * @param {Update} options
     * @returns {Rows}
     */
-    async update(options){
-        let { data } = options;
+    async update({data, method}){
         if (!data){
             throw new SQLError("PARAMETER data:object IS MISSING");
         };
@@ -30,7 +29,7 @@ class Postgre {
             throw new SQLError("PARAMETER table:string: IS MISSING");
         };
         let rows;
-        switch (options.method){
+        switch (method){
             case "GET": {
                 if (!data.id){
                     throw new SQLError("MISSING PARAMETER id:string");
@@ -73,7 +72,7 @@ class Postgre {
             };
 
             default: {
-                throw new SQLError(`UNKNOWN METHOD: ${options.method}`)
+                throw new SQLError(`UNKNOWN METHOD: ${method}`)
             };
         };
         return rows;

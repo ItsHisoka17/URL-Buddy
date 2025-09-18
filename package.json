@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/ItsHisoka17/URL-Buddy#readme",
   "dependencies": {
+    "body-parser": "^2.2.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
