@@ -1,6 +1,5 @@
 const cors = require("cors");
 const cookies = require("cookie-parser");
-const bodyparser = require("body-parser");
 const Constants = require("./Constants/Constants");
 const express = require("express");
 const { join } = require("path");
@@ -19,8 +18,9 @@ class Gateway {
             origin: URL,
             credentials: true
         }));
+        server.use(express.json());
         this.start();
-        server.post("/api/createGateway", bodyparser.json(), async (req, res)=> {
+        server.post("/api/createGateway", async (req, res)=> {
             try {
                 let data = req.body;
                 if (!data.redirect){
@@ -44,7 +44,7 @@ class Gateway {
             }
         });
 
-        server.post("/api/log", bodyparser.json(), (req, res)=> {
+        server.post("/api/log", (req, res)=> {
             if(!req.body?.message){
                 res.status(400).json({error: "RequestError | Missing [message] Parameter"});
                 return;
@@ -96,7 +96,7 @@ class Gateway {
             };
             let exists = await invalidatePath(data["path"]);
             if (exists) {
-                return createCredentials();
+                return createData();
             } else {
                 return data;
             };

@@ -48,7 +48,7 @@ export default function App() {
       const data = await createGateway(payload);
       setGateway(data);
       toast.push("Short link created!", { type: "success" });
-      log(`Gateway Created ${payload}`);
+      await log(`Gateway Created ${payload}`);
       try { await navigator.clipboard.writeText(`${window.location.origin}/${data.path}`); toast.push("Copied to clipboard", { type: "info", duration: 2500 }); } catch {}
       setRedirect("");
       setCustomPath("");
