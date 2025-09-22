@@ -35,9 +35,10 @@ export default function App() {
     try {
       if (customPath) {
         const origin = window.location.origin;
-        const checkRes = await fetch(`${origin}/${customPath}`, { method: "GET", cache: "no-store" });
-        if (checkRes.status !== 404) {
-          toast.push("This custom path already exists. Pick another.", { type: "error" });
+        const checkRes = await fetch(`${origin}/checkPath/${customPath}`, { method: "GET", cache: "no-store" });
+        let res = await checkRes.json();
+        if (res.exists) {
+          toast.push("This custom path already exists", { type: "error" });
           setLoading(false);
           return;
         }

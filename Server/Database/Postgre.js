@@ -39,18 +39,18 @@ class Postgre {
         if (!data){
             throw new SQLError("PARAMETER data:object IS MISSING");
         };
-        if (!data.table){
-            throw new SQLError("PARAMETER table:string: IS MISSING");
+        if (!data.table||data.table.split(" ").length>1){
+            throw new SQLError("PARAMETER table:string: IS INVALID");
         };
         let rows;
         switch (method){
             case "GET": {
-                if (!data.id){
-                    throw new SQLError("MISSING PARAMETER id:string");
+                if (!data.path){
+                    throw new SQLError("MISSING PARAMETER path:string");
                 };
                 let response = await this.process.query(
-                    `SELECT * FROM ${data.table} WHERE id=$1`,
-                    [data.id]
+                    `SELECT * FROM ${data.table} WHERE path=$1`,
+                    [data.path]
                 );
                 if (response.rowCount<1) {
                     log({

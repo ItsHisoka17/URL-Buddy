@@ -3,6 +3,9 @@ export async function log(message){
         throw new Error("Missing [message] Parameter");
     };
     let response = await fetch("/api/log", {
+        headers: {
+            "Content-Type": "application/json"
+        },
         method: "POST",
         body: JSON.stringify({message})
     });

@@ -20,7 +20,7 @@ class Gateway {
             credentials: true
         }));
         this.start();
-        server.post("/api/createGateway", bodyparser, async (req, res)=> {
+        server.post("/api/createGateway", bodyparser.json(), async (req, res)=> {
             try {
                 let data = req.body;
                 if (!data.redirect){
@@ -29,10 +29,9 @@ class Gateway {
                 let response = await this.createGateway(data.redirect);
                 res.status(200).json({response});
                 log({
-                    message: `Gateway Created ${response[0].id}`,
+                    message: `Gateway Created ${[response[0].id, response[0].path]}`,
                     dir: "database"
                 });
-                await this.listen();
             } catch (e) {
                 console.error(e);
                 log({
@@ -45,9 +44,10 @@ class Gateway {
             }
         });
 
-        server.post("/api/log", bodyparser(), (req, res)=> {
+        server.post("/api/log", bodyparser.json(), (req, res)=> {
             if(!req.body?.message){
                 res.status(400).json({error: "RequestError | Missing [message] Parameter"});
+                return;
             };
             if (typeof req.body.message==="string"){
                 log({
@@ -58,55 +58,32 @@ class Gateway {
             };
         });
 
+        server.get("/checkPath/:path", async (req, res)=> {
+            let response = await this.postgre.update({
+                data: {
+                    path: req.params.path
+                },
+                method: "GET"
+            });
+            if (response){
+                res.json({exists: true});
+            } else {
+                res.json({exists: false});
+            };
+        })
         server.use(express.static(join(process.cwd(), "Client", "dist")));
         log({
             message: "Gateway Started"
         });
     };
 
-    async listen(){
-        let data = await this.postgre.update({
-            data: {
-                table: "urls"
-            },
-            method: "TABLE"
-        });
-        let now = new Date();
-        if (data){
-            for (let row of data){
-                if (row.expires_at&&new Date(row.expires_at)<=now){
-                    await this.postgre.update({
-                        data: {
-                            id: row.id
-                        },
-                        method:"DELETE"
-                    });
-                    log({
-                        message: `ROW ${row.id} DELETED - EXPIRED`,
-                        dir: "database"
-                    });
-                    continue;
-                };
-                if (row.path){
-                    this.server.get(`/${row.path}`, (req, res)=> {
-                        if (row.redirect){
-                            res.redirect(row.redirect);
-                        } else {
-                            res.redirect("/");
-                        };
-                    });
-                };
-            };
-        };
-    };
-
     async createGateway(redirectURL){
-        let invalidatePath = async (p)=> {
+        let invalidatePath = async (path)=> {
             let res = await this.postgre.update({
                 method: "GET",
                 data: {
                     table: "urls",
-                    id: p
+                    path
                 }
             });
             let truthy = (res&&res[0].id)?true:res;
@@ -117,7 +94,7 @@ class Gateway {
                 id: generateString(7),
                 path: generateString(10)
             };
-            let exists = await invalidatePath(data["id"]);
+            let exists = await invalidatePath(data["path"]);
             if (exists) {
                 return createCredentials();
             } else {
@@ -139,10 +116,38 @@ class Gateway {
     };
 
     start() {
-        this.listen().catch((err)=> {log({message: `Listen Failed ${err}`, level: "error"})});
-        setInterval(()=> {
-            this.listen().catch((err)=> {log({message: `Listen Failed ${err}`, level: "error"})});
-        }, 5*60*1000);
+        this.server.get("/:path", async (req, res)=> {
+            let response = await this.postgre.update({
+                data: {
+                    table: "urls",
+                    path: req.params.path
+                },
+                method: "GET"
+            });
+            if (response&&response[0].redirect){
+                res.redirect(response[0].redirect)
+            } else {
+                res.redirect("/");
+            };
+        });
+        setInterval(async ()=> {
+            let data = await this.postgre.update({
+                data: {
+                    table: "urls"
+                },
+                method: "TABLE"
+            });
+            for (let row of data){
+                if (new Date(row.expires_at)<=new Date()){
+                    await this.postgre.update({
+                        data: {
+                            table: "urls",
+                            id: row.id
+                        }
+                    });
+                };
+            };
+        })
     };
 };
 

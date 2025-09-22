@@ -14,12 +14,12 @@ function formatTimeLeft(ms) {
   return `${String(mins).padStart(2,"0")}:${String(secs).padStart(2,"0")}`;
 }
 
-export default function ResultCard({ id, path, redirect, expiresAt, onCopy }) {
+export default function ResultCard({ id, path, redirect, expires_at, onCopy }) {
   const [timeLeft, setTimeLeft] = useState("");
   const shortUrl = `${window.location.origin}/${path}`;
 
   useEffect(() => {
-    const expiry = new Date(expiresAt).getTime();
+    const expiry = new Date(expires_at).getTime();
     function update() {
       const diff = expiry - Date.now();
       setTimeLeft(formatTimeLeft(diff));
@@ -27,7 +27,7 @@ export default function ResultCard({ id, path, redirect, expiresAt, onCopy }) {
     update();
     const t = setInterval(update, 1000);
     return () => clearInterval(t);
-  }, [expiresAt]);
+  }, [expires_at]);
 
   async function copy() {
     try {
@@ -81,7 +81,7 @@ export default function ResultCard({ id, path, redirect, expiresAt, onCopy }) {
         <div className="meta">
           <div className="meta-row"><strong>ID:</strong> <span>{id}</span></div>
           <div className="meta-row"><strong>Path:</strong> <span>{path}</span></div>
-          <div className="meta-row"><strong>Expires at:</strong> <span>{new Date(expiresAt).toLocaleString()}</span></div>
+          <div className="meta-row"><strong>Expires at:</strong> <span>{new Date(expires_at).toLocaleString()}</span></div>
         </div>
       </div>
     </div>
