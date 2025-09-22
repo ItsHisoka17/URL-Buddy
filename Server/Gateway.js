@@ -140,7 +140,7 @@ class Gateway {
                 method: "TABLE"
             });
             for (let row of data){
-                if (new Date(row.expires_at)<=new Date()){
+                if (new Date(row.expires_at).getTime()<=new Date().getTime()){
                     await this.postgre.update({
                         data: {
                             table: "urls",
@@ -151,11 +151,11 @@ class Gateway {
                     log({
                         message: `ROW ${row.path} ${row.id} DELETED - EXPIRED`,
                         dir: "database"
-                    })
+                    });
                 };
             };
         };
-        del.bind(this);
+        del = del.bind(this);
         del().catch(()=>{});
         setInterval(async ()=> {
             await del();

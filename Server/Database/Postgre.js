@@ -29,7 +29,7 @@ class Postgre {
     };
 
     async createTable(){
-        await this.process.query("CREATE TABLE IF NOT EXISTS urls (id VARCHAR(255) PRIMARY KEY, path VARCHAR(255) UNIQUE NOT NULL, redirect TEXT NOT NULL, created_at TIMESTAMP NOT NULL DEFAULT NOW(), expires_at TIMESTAMP NOT NULL DEFAULT NOW() + INTERVAL '30 minutes')");
+        await this.process.query("CREATE TABLE IF NOT EXISTS urls (id VARCHAR(255) PRIMARY KEY, path VARCHAR(255) UNIQUE NOT NULL, redirect TEXT NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), expires_at TIMESTAMPTZ NOT NULL DEFAULT NOW() + INTERVAL '30 minutes')");
     };
     /**
     * @param {Update} options
