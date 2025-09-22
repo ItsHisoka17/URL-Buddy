@@ -1,25 +1,31 @@
 import React, { useEffect, useState } from "react";
 
 function qrDataUrl(text) {
-  return `https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=${encodeURIComponent(text)}&choe=UTF-8`;
+  return text ? `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(text)}` : "";
 }
 
 function formatTimeLeft(ms) {
   if (ms <= 0) return "Expired";
   const sec = Math.floor(ms / 1000);
-  const hrs = Math.floor(sec / 3600);
   const mins = Math.floor((sec % 3600) / 60);
   const secs = sec % 60;
-  if (hrs > 0) return `${hrs}h ${String(mins).padStart(2,"0")}m ${String(secs).padStart(2,"0")}s`;
   return `${String(mins).padStart(2,"0")}:${String(secs).padStart(2,"0")}`;
 }
 
 export default function ResultCard({ id, path, redirect, expires_at, onCopy }) {
   const [timeLeft, setTimeLeft] = useState("");
-  const shortUrl = `${window.location.origin}/${path}`;
+  const [shortUrl, setShortUrl] = useState("");
 
   useEffect(() => {
+    if (path) setShortUrl(`${window.location.origin}/${path}`);
+  }, [path]);
+
+  useEffect(() => {
+    if (!expires_at) return;
+
     const expiry = new Date(expires_at).getTime();
+    if (isNaN(expiry)) return;
+
     function update() {
       const diff = expiry - Date.now();
       setTimeLeft(formatTimeLeft(diff));
@@ -30,6 +36,7 @@ export default function ResultCard({ id, path, redirect, expires_at, onCopy }) {
   }, [expires_at]);
 
   async function copy() {
+    if (!shortUrl) return;
     try {
       await navigator.clipboard.writeText(shortUrl);
       onCopy && onCopy();
@@ -45,12 +52,14 @@ export default function ResultCard({ id, path, redirect, expires_at, onCopy }) {
   }
 
   function share() {
-    if (navigator.share) {
+    if (navigator.share && shortUrl) {
       navigator.share({ title: "Short link", text: redirect, url: shortUrl }).catch(() => {});
     } else {
       copy();
     }
   }
+
+  if (!shortUrl) return null;
 
   return (
     <div className="result-card" aria-live="polite">
@@ -78,11 +87,6 @@ export default function ResultCard({ id, path, redirect, expires_at, onCopy }) {
 
       <div className="result-bottom">
         <img className="qr" src={qrDataUrl(shortUrl)} alt={`QR code for ${shortUrl}`} />
-        <div className="meta">
-          <div className="meta-row"><strong>ID:</strong> <span>{id}</span></div>
-          <div className="meta-row"><strong>Path:</strong> <span>{path}</span></div>
-          <div className="meta-row"><strong>Expires at:</strong> <span>{new Date(expires_at).toLocaleString()}</span></div>
-        </div>
       </div>
     </div>
   );

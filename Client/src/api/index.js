@@ -16,10 +16,11 @@ async function request(path, opts = {}) {
   return body;
 }
 
-export function createGateway(payload) {
+export async function createGateway(payload) {
   const body = typeof payload === "string" ? { redirect: payload } : payload;
-  return request("/createGateway", {
+  let data = await request("/createGateway", {
     method: "POST",
     body: JSON.stringify(body),
   });
-;}
+  return data;
+};

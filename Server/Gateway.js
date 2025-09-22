@@ -26,10 +26,11 @@ class Gateway {
                 if (!data.redirect){
                     res.status(400).json({error: "RequestError | Missing [redirect] Parameter"});
                 };
-                let response = await this.createGateway(data.redirect);
-                res.status(200).json({response});
+                let path = req.body?.path || null
+                let response = await this.createGateway(data.redirect, path);
+                res.status(200).json({...response[0]});
                 log({
-                    message: `Gateway Created ${[response[0].id, response[0].path]}`,
+                    message: `Gateway Created ${response[0].id} ${response[0].path}`,
                     dir: "database"
                 });
             } catch (e) {
@@ -61,11 +62,12 @@ class Gateway {
         server.get("/checkPath/:path", async (req, res)=> {
             let response = await this.postgre.update({
                 data: {
+                    table: "urls",
                     path: req.params.path
                 },
                 method: "GET"
             });
-            if (response){
+            if (response&&response.length>0){
                 res.json({exists: true});
             } else {
                 res.json({exists: false});
@@ -77,13 +79,13 @@ class Gateway {
         });
     };
 
-    async createGateway(redirectURL){
-        let invalidatePath = async (path)=> {
+    async createGateway(redirectURL, path){
+        let validatePath = async (p)=> {
             let res = await this.postgre.update({
                 method: "GET",
                 data: {
                     table: "urls",
-                    path
+                    path: p
                 }
             });
             let truthy = (res&&res[0].id)?true:res;
@@ -92,11 +94,11 @@ class Gateway {
         let createData = async ()=> {
             let data = {
                 id: generateString(7),
-                path: generateString(10)
+                path: path?path:generateString(10)
             };
-            let exists = await invalidatePath(data["path"]);
+            let exists = await validatePath(data["path"]);
             if (exists) {
-                return createData();
+                return await createData();
             } else {
                 return data;
             };
@@ -130,7 +132,7 @@ class Gateway {
                 res.redirect("/");
             };
         });
-        setInterval(async ()=> {
+        async function del(){
             let data = await this.postgre.update({
                 data: {
                     table: "urls"
@@ -143,11 +145,21 @@ class Gateway {
                         data: {
                             table: "urls",
                             id: row.id
-                        }
+                        },
+                        method: "DELETE"
                     });
+                    log({
+                        message: `ROW ${row.path} ${row.id} DELETED - EXPIRED`,
+                        dir: "database"
+                    })
                 };
             };
-        })
+        };
+        del.bind(this);
+        del().catch(()=>{});
+        setInterval(async ()=> {
+            await del();
+        }, 5*60*1000);
     };
 };
 

@@ -1,11 +1,16 @@
 import React, { useState } from "react";
 import { createGateway } from "./api/index";
-import { log } from "./api/log"
+import { log } from "./api/log";
 import { useToast } from "./components/ToastContext";
 import ResultCard from "./components/ResultCard";
 
 function isValidUrl(url) {
-  try { new URL(url); return true; } catch { return false; }
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export default function App() {
@@ -16,15 +21,18 @@ export default function App() {
   const toast = useToast();
 
   async function handleCreate(e) {
-    e && e.preventDefault();
-    toast.remove && null;
+    e?.preventDefault();
+    toast.remove?.();
 
-    if (!isValidUrl(redirect)) {
+    const trimmedRedirect = redirect.trim();
+    const trimmedPath = customPath.trim();
+
+    if (!isValidUrl(trimmedRedirect)) {
       toast.push("Please enter a valid redirect URL", { type: "error" });
       return;
     }
 
-    if (customPath && !/^[A-Za-z0-9_-]{4,40}$/.test(customPath)) {
+    if (trimmedPath && !/^[A-Za-z0-9_-]{4,40}$/.test(trimmedPath)) {
       toast.push("Custom path: 4–40 chars, letters, numbers, _ or - only", { type: "error" });
       return;
     }
@@ -33,10 +41,11 @@ export default function App() {
     setGateway(null);
 
     try {
-      if (customPath) {
+      if (trimmedPath) {
         const origin = window.location.origin;
-        const checkRes = await fetch(`${origin}/checkPath/${customPath}`, { method: "GET", cache: "no-store" });
-        let res = await checkRes.json();
+        const checkRes = await fetch(`${origin}/checkPath/${encodeURIComponent(trimmedPath)}`, { cache: "no-store" });
+        const res = await checkRes.json();
+
         if (res.exists) {
           toast.push("This custom path already exists", { type: "error" });
           setLoading(false);
@@ -44,15 +53,28 @@ export default function App() {
         }
       }
 
-      const payload = customPath ? { redirect, path: customPath } : { redirect };
+      const payload = trimmedPath ? { redirect: trimmedRedirect, path: trimmedPath } : { redirect: trimmedRedirect };
+
       const data = await createGateway(payload);
+
+      if (!data) throw new Error("No response from server");
+
       setGateway(data);
       toast.push("Short link created!", { type: "success" });
-      await log(`Gateway Created ${payload}`);
-      try { await navigator.clipboard.writeText(`${window.location.origin}/${data.path}`); toast.push("Copied to clipboard", { type: "info", duration: 2500 }); } catch {}
+
+      try {
+        await log(`Gateway Created: ${JSON.stringify(payload)}`);
+        await navigator.clipboard.writeText(`${window.location.origin}/${data.path}`);
+        toast.push("Copied to clipboard", { type: "info", duration: 2500 });
+      } catch (err) {
+        console.warn("Failed to log or copy:", err);
+      }
+
       setRedirect("");
       setCustomPath("");
+
     } catch (err) {
+      console.error(err);
       toast.push(err.message || "Failed to create short link", { type: "error", duration: 6000 });
     } finally {
       setLoading(false);
@@ -77,7 +99,7 @@ export default function App() {
         <div className="card">
           <div className="card-left">
             <h1 className="headline">Create a short link</h1>
-            <p className="muted">Paste your destination and optionally choose a custom path. Paths are checked live against the origin for collisions.</p>
+            <p className="muted">Paste your destination and optionally choose a custom path. Paths are checked live for collisions.</p>
 
             <form className="form" onSubmit={handleCreate}>
               <label className="label">
@@ -137,7 +159,7 @@ export default function App() {
         </div>
       </main>
 
-      <footer className="footer">Links expire automatically after 30 minutes | copyright(c) Jxdn </footer>
+      <footer className="footer">Links expire automatically after 30 minutes | copyright(c) Jxdn</footer>
     </div>
   );
 }

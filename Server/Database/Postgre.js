@@ -53,11 +53,6 @@ class Postgre {
                     [data.path]
                 );
                 if (response.rowCount<1) {
-                    log({
-                        message: "NO ROWS FOUND MATCHING QUERY",
-                        level: "warn",
-                        dir: "database"
-                    });
                     rows = false;
                 } else {
                 rows = response.rows;
