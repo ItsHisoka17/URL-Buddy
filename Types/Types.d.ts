@@ -6,7 +6,7 @@ export interface Data {
 }
 
 export interface Update {
-    method: string,
+    method: "GET" | "INSERT" | "DELETE" | "TABLE"
     data: Data
 }
 
@@ -24,5 +24,5 @@ export interface LogData {
     message: string,
     level?: "info" | "warn" | "error",
     logToConsole?: boolean
-    dir?: string
+    dir?: string | string[]
 }

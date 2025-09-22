@@ -1,10 +1,11 @@
 const cors = require("cors");
 const cookies = require("cookie-parser");
-const bodyparser = require("body-parser").json();
+const bodyparser = require("body-parser");
 const Constants = require("./Constants/Constants");
 const express = require("express");
 const { join } = require("path");
-const { log, generateString } = require("./Utils/Utils")
+const log = require("./Utils/log");
+const generateString = require("./Utils/generateString");
 const Postgre = require("./Database/Postgre");
 const URL = Constants.URL;
 
@@ -18,6 +19,7 @@ class Gateway {
             origin: URL,
             credentials: true
         }));
+        this.start();
         server.post("/api/createGateway", bodyparser, async (req, res)=> {
             try {
                 let data = req.body;
@@ -27,21 +29,24 @@ class Gateway {
                 let response = await this.createGateway(data.redirect);
                 res.status(200).json({response});
                 log({
-                    message: `Gateway Created ${response[0].id}`
-                })
+                    message: `Gateway Created ${response[0].id}`,
+                    dir: "database"
+                });
+                await this.listen();
             } catch (e) {
                 console.error(e);
                 log({
                     message: e.message, 
-                    level: "error", 
+                    level: "error",
+                    dir: "database", 
                     logToConsole: false
                 })
                 res.status(500).json({error: "SQLError | ERROR LOGGED"});
             }
         });
 
-        server.post("/api/log", bodyparser, (req, res)=> {
-            if(!req.body.message){
+        server.post("/api/log", bodyparser(), (req, res)=> {
+            if(!req.body?.message){
                 res.status(400).json({error: "RequestError | Missing [message] Parameter"});
             };
             if (typeof req.body.message==="string"){
@@ -52,11 +57,47 @@ class Gateway {
                 res.status(200).json({message: "Log Successful"});
             };
         });
-        
+
         server.use(express.static(join(process.cwd(), "Client", "dist")));
         log({
             message: "Gateway Started"
         });
+    };
+
+    async listen(){
+        let data = await this.postgre.update({
+            data: {
+                table: "urls"
+            },
+            method: "TABLE"
+        });
+        let now = new Date();
+        if (data){
+            for (let row of data){
+                if (row.expires_at&&new Date(row.expires_at)<=now){
+                    await this.postgre.update({
+                        data: {
+                            id: row.id
+                        },
+                        method:"DELETE"
+                    });
+                    log({
+                        message: `ROW ${row.id} DELETED - EXPIRED`,
+                        dir: "database"
+                    });
+                    continue;
+                };
+                if (row.path){
+                    this.server.get(`/${row.path}`, (req, res)=> {
+                        if (row.redirect){
+                            res.redirect(row.redirect);
+                        } else {
+                            res.redirect("/");
+                        };
+                    });
+                };
+            };
+        };
     };
 
     async createGateway(redirectURL){
@@ -95,6 +136,13 @@ class Gateway {
             }
         });
         return updated;
+    };
+
+    start() {
+        this.listen().catch((err)=> {log({message: `Listen Failed ${err}`, level: "error"})});
+        setInterval(()=> {
+            this.listen().catch((err)=> {log({message: `Listen Failed ${err}`, level: "error"})});
+        }, 5*60*1000);
     };
 };
 

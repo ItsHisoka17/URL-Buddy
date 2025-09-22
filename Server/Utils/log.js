@@ -4,7 +4,7 @@
 
 const fs = require("fs");
 const { COLORS } = require("../Constants/Constants");
-const { formatDate } = require("./Utils");
+const formatDate = require("./formatDate");
 const path = require("path");
 /**
  * 
@@ -13,6 +13,10 @@ const path = require("path");
 function log({message, level="info", logToConsole=true, dir="server"}){
     if (!["info","error", "warn"].includes(level)){
         throw new Error("Invalid [level] Parameter");
+    };
+    if (Array.isArray(dir)){
+        dir.forEach((d)=> {log({message, level, logToConsole, d})});
+        return;
     };
     let date = formatDate();
     let file = path.join(process.cwd(), "logs", `${dir}.log`);

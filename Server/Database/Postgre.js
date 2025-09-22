@@ -6,6 +6,7 @@
 const pg = require("pg");
 const DB_URL = require("../Constants/Constants").DB_URL;
 const { SQLError } = require("../Structures/Error");
+const log = require("../Utils/log");
 
 class Postgre {
     constructor(){
@@ -15,7 +16,20 @@ class Postgre {
                 rejectUnauthorized: false
             }
         });
-        console.log("Database Started")
+        log({
+            message: "Database Started",
+            dir: "database"
+        });
+        this.createTable().then(()=> {
+            log({
+                message: "TABLE urls IS EXISTENT",
+                dir: "database"
+            });
+        });
+    };
+
+    async createTable(){
+        await this.process.query("CREATE TABLE IF NOT EXISTS urls (id VARCHAR(255) PRIMARY KEY, path VARCHAR(255) UNIQUE NOT NULL, redirect TEXT NOT NULL, created_at TIMESTAMP NOT NULL DEFAULT NOW(), expires_at TIMESTAMP NOT NULL DEFAULT NOW() + INTERVAL '30 minutes')");
     };
     /**
     * @param {Update} options
@@ -39,7 +53,11 @@ class Postgre {
                     [data.id]
                 );
                 if (response.rowCount<1) {
-                    console.error(new SQLError("NO ROWS FOUND MATCHING QUERY"));
+                    log({
+                        message: "NO ROWS FOUND MATCHING QUERY",
+                        level: "warn",
+                        dir: "database"
+                    });
                     rows = false;
                 } else {
                 rows = response.rows;
@@ -68,6 +86,21 @@ class Postgre {
                     [data.id]
                 );
                 rows = response.rows;
+                break;
+            };
+
+            case "TABLE": {
+                let response = await this.process.query(`SELECT * FROM ${data.table}`);
+                if (response.rowCount<1) {
+                    log({
+                        message: "NO ROWS FOUND MATCHING QUERY",
+                        level: "warn",
+                        dir: "database"
+                    });
+                    rows = false;
+                } else {
+                rows = response.rows;
+                };
                 break;
             };
 
