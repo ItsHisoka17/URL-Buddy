@@ -1,9 +1,9 @@
 require("dotenv").config();
-const { PORT, DB_URL } = process.env;
+const { PORT, DB_URL, URL } = process.env;
 
 const Constants = {
     PORT,
-    URL: "https://urlbuddy.groovify.space",
+    URL,
     DB_URL,
     COLORS: {
         info: "\x1b[36m",
