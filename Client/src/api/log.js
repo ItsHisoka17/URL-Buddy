@@ -1,4 +1,4 @@
-export async function log(message){
+export async function log(message, level="info"){
     if (!message||!(typeof message==="string")){
         throw new Error("Missing [message] Parameter");
     };
@@ -7,7 +7,8 @@ export async function log(message){
             "Content-Type": "application/json"
         },
         method: "POST",
-        body: JSON.stringify({message})
+        body: JSON.stringify({message, level}),
+        credentials: "include"
     });
     let body = await response.json().catch(()=> null);
     if (!response.ok||response.status!==200){

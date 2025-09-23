@@ -30,7 +30,7 @@ class Gateway {
                 let path = req.body?.path || null
                 let response = await this.createGateway(data.redirect, path);
                 res.cookie("id", response[0].id, {
-                    maxAge: 5*60*1000
+                    maxAge: 5*60*1000,
                 });
                 res.status(200).json({...response[0]});
                 log({
@@ -57,7 +57,8 @@ class Gateway {
             if (typeof req.body.message==="string"){
                 log({
                     message: req.body.message,
-                    dir: "client"
+                    dir: "client",
+                    level: req.body.level??"info"
                 });
                 res.status(200).json({message: "Log Successful"});
             };
@@ -79,14 +80,15 @@ class Gateway {
         });
 
         server.get("/api/checkExists", async (req, res)=> {
-            let exists = false;
+            let exists;
             let data;
-            let result = {exists};
+            let result = {};
             try {
-            if (req.cookies.id){
+            if (req.cookies.id&&"string"===typeof req.cookies.id){
                 let response = await this.postgre.update({
                     method: "GET",
                     data: {
+                        table: "urls",
                         id: req.cookies.id
                     }
                 });
@@ -95,9 +97,17 @@ class Gateway {
                     data = {
                         ...response[0]
                     };
+                    result = {
+                        data,
+                        exists
+                    };
+                } else {
+                    exists = false;
+                    result = {
+                        exists
+                    };
                 };
-                Object.defineProperty(result, "data", data);
-                res.status(200).json(data);
+                res.status(200).json(result);
             }
             } catch (e) {
                 res.status(500).json({error: "API Error", status: 500});
@@ -107,7 +117,7 @@ class Gateway {
                     level: "error"
                 });
             };
-        })
+        });
         server.use(express.static(join(process.cwd(), "Client", "dist")));
         log({
             message: "Gateway Started"
@@ -174,6 +184,13 @@ class Gateway {
                 },
                 method: "TABLE"
             });
+            if (!Array.isArray(data)){
+                log({
+                    message: "Table is not iterable null or not an array",
+                    level: "warn",
+                    dir: "database"
+                });
+            };
             for (let row of data){
                 if (new Date(row.expires_at).getTime()<=new Date().getTime()){
                     await this.postgre.update({

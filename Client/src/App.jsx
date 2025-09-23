@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { createGateway } from "./api/index";
 import { log } from "./api/log";
 import { useToast } from "./components/ToastContext";
@@ -22,23 +22,35 @@ export default function App() {
   const [exists, setExists] = useState(false);
   const toast = useToast();
 
-  (async ()=> {
-    let response = await fetch(`${window.location.origin}/api/checkExists`);
-    if (!(response.ok || response.status !== 200)) {
-      let res = await response.json?.();
+  useEffect(() => {
+  (async () => {
+    try {
+      const response = await fetch(`${window.location.origin}/api/checkExists`, {
+        credentials: "include"
+      });
+      const res = await response.json();
+      console.log(res);
+      if (!response.ok) {
+        throw new Error(res?.error || response.statusText);
+      }
+      if (res.exists) {
+        setGateway(res.data);
+        setExists(true);
+      }
+    } catch (err) {
+      console.error(err);
       toast.push("Internal server error", { type: "error" });
-      await log(`Failed to check for exists ${res ? res.error : (response.statusText || "API Error")}`);
-    };
-    if (res.exists) {
-      setGateway(res.data);
-      setExists(true);
-    };
+      await log(`Failed to check for exists: ${err.message}`, "error");
+    }
   })();
+  }, []);
+
   async function handleCreate(e) {
     e?.preventDefault();
     toast.remove?.();
     if ((gateway&&exists)){
       toast.push("Can only create one link", {type: "error"});
+      return;
     };
     const trimmedRedirect = redirect.trim();
     const trimmedPath = customPath.trim();
@@ -59,7 +71,7 @@ export default function App() {
     try {
       if (trimmedPath) {
         const origin = window.location.origin;
-        const checkRes = await fetch(`${origin}/api/checkPath/${encodeURIComponent(trimmedPath)}`, { cache: "no-store" });
+        const checkRes = await fetch(`${origin}/api/checkPath/${encodeURIComponent(trimmedPath)}`, { cache: "no-store", credentials: "include" });
         const res = await checkRes.json();
 
         if (res.exists) {
@@ -73,13 +85,15 @@ export default function App() {
 
       const data = await createGateway(payload);
 
-      if (!data) throw new Error("No response from server");
-
+      if (!data) {
+        log("Failed to get response from server", "error");
+        toast.push("Failed to fetch data");
+        throw new Error("No response from server");
+      }
       setGateway(data);
       toast.push("Short link created!", { type: "success" });
 
       try {
-        await log(`Gateway Created: ${JSON.stringify(payload)}`);
         await navigator.clipboard.writeText(`${window.location.origin}/${data.path}`);
         toast.push("Copied to clipboard", { type: "info", duration: 2500 });
       } catch (err) {
@@ -90,8 +104,8 @@ export default function App() {
       setCustomPath("");
 
     } catch (err) {
-      console.error(err);
-      toast.push(err.message || "Failed to create short link", { type: "error", duration: 6000 });
+      log(err.message, "error");
+      toast.push("Failed to create short link", { type: "error", duration: 6000 });
     } finally {
       setLoading(false);
     }
@@ -152,7 +166,7 @@ export default function App() {
                 <button
                   type="button"
                   className="btn ghost"
-                  onClick={() => { setRedirect(""); setCustomPath(""); setGateway(null); }}
+                  onClick={() => { setRedirect(""); setCustomPath("");}}
                 >
                   Clear
                 </button>
