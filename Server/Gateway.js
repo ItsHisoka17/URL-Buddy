@@ -25,9 +25,13 @@ class Gateway {
                 let data = req.body;
                 if (!data.redirect){
                     res.status(400).json({error: "RequestError | Missing [redirect] Parameter"});
+                    return;
                 };
                 let path = req.body?.path || null
                 let response = await this.createGateway(data.redirect, path);
+                res.cookie("id", response[0].id, {
+                    maxAge: 5*60*1000
+                });
                 res.status(200).json({...response[0]});
                 log({
                     message: `Gateway Created ${response[0].id} ${response[0].path}`,
@@ -59,7 +63,7 @@ class Gateway {
             };
         });
 
-        server.get("/checkPath/:path", async (req, res)=> {
+        server.get("/api/checkPath/:path", async (req, res)=> {
             let response = await this.postgre.update({
                 data: {
                     table: "urls",
@@ -71,6 +75,37 @@ class Gateway {
                 res.json({exists: true});
             } else {
                 res.json({exists: false});
+            };
+        });
+
+        server.get("/api/checkExists", async (req, res)=> {
+            let exists = false;
+            let data;
+            let result = {exists};
+            try {
+            if (req.cookies.id){
+                let response = await this.postgre.update({
+                    method: "GET",
+                    data: {
+                        id: req.cookies.id
+                    }
+                });
+                if (response[0]&&response[0].id){
+                    exists = true;
+                    data = {
+                        ...response[0]
+                    };
+                };
+                Object.defineProperty(result, "data", data);
+                res.status(200).json(data);
+            }
+            } catch (e) {
+                res.status(500).json({error: "API Error", status: 500});
+                console.error(e);
+                log({
+                    message: `API Request Error ${e}`,
+                    level: "error"
+                });
             };
         })
         server.use(express.static(join(process.cwd(), "Client", "dist")));

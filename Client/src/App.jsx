@@ -3,6 +3,7 @@ import { createGateway } from "./api/index";
 import { log } from "./api/log";
 import { useToast } from "./components/ToastContext";
 import ResultCard from "./components/ResultCard";
+import e from "cors";
 
 function isValidUrl(url) {
   try {
@@ -18,12 +19,27 @@ export default function App() {
   const [customPath, setCustomPath] = useState("");
   const [loading, setLoading] = useState(false);
   const [gateway, setGateway] = useState(null);
+  const [exists, setExists] = useState(false);
   const toast = useToast();
 
+  (async ()=> {
+    let response = await fetch(`${window.location.origin}/api/checkExists`);
+    if (!(response.ok || response.status !== 200)) {
+      let res = await response.json?.();
+      toast.push("Internal server error", { type: "error" });
+      await log(`Failed to check for exists ${res ? res.error : (response.statusText || "API Error")}`);
+    };
+    if (res.exists) {
+      setGateway(res.data);
+      setExists(true);
+    };
+  })();
   async function handleCreate(e) {
     e?.preventDefault();
     toast.remove?.();
-
+    if ((gateway&&exists)){
+      toast.push("Can only create one link", {type: "error"});
+    };
     const trimmedRedirect = redirect.trim();
     const trimmedPath = customPath.trim();
 
@@ -43,7 +59,7 @@ export default function App() {
     try {
       if (trimmedPath) {
         const origin = window.location.origin;
-        const checkRes = await fetch(`${origin}/checkPath/${encodeURIComponent(trimmedPath)}`, { cache: "no-store" });
+        const checkRes = await fetch(`${origin}/api/checkPath/${encodeURIComponent(trimmedPath)}`, { cache: "no-store" });
         const res = await checkRes.json();
 
         if (res.exists) {

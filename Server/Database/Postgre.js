@@ -45,12 +45,12 @@ class Postgre {
         let rows;
         switch (method){
             case "GET": {
-                if (!data.path){
-                    throw new SQLError("MISSING PARAMETER path:string");
+                if (!(data.path&&data.id)){
+                    throw new SQLError("MISSING PARAMETER path:string|id:string");
                 };
                 let response = await this.process.query(
-                    `SELECT * FROM ${data.table} WHERE path=$1`,
-                    [data.path]
+                    `SELECT * FROM ${data.table} WHERE ${data.id?"id":"path"}=$1`,
+                    [data.id?data.id:data.path]
                 );
                 if (response.rowCount<1) {
                     rows = false;
