@@ -7,6 +7,7 @@ const log = require("./Utils/log");
 const generateString = require("./Utils/generateString");
 const Postgre = require("./Database/Postgre");
 const URL = Constants.URL;
+const ENV = Constants.ENV;
 
 class Gateway {
 
@@ -31,6 +32,9 @@ class Gateway {
                 let response = await this.createGateway(data.redirect, path);
                 res.cookie("id", response[0].id, {
                     maxAge: 5*60*1000,
+                    secure: ENV==="PROD"?true:false,
+                    httpOnly: ENV==="PROD"?true:false,
+                    sameSite: "strict"
                 });
                 res.status(200).json({...response[0]});
                 log({
