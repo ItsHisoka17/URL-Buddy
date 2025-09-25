@@ -194,6 +194,7 @@ class Gateway {
                     level: "warn",
                     dir: "database"
                 });
+                return;
             };
             for (let row of data){
                 if (new Date(row.expires_at).getTime()<=new Date().getTime()){
