@@ -13,6 +13,7 @@ Thumbs.db
 
 .git
 .gitignore
+.github
 
 docker-compose.yml
 .dockerignore
