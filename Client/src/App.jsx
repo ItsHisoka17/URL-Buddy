@@ -3,7 +3,6 @@ import { createGateway } from "./api/index";
 import { log } from "./api/log";
 import { useToast } from "./components/ToastContext";
 import ResultCard from "./components/ResultCard";
-import e from "cors";
 
 function isValidUrl(url) {
   try {
