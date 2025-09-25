@@ -17,4 +17,4 @@ COPY . .
 COPY --from=client-build /app/Client/dist ./Client/dist
 
 EXPOSE 3000
-CMD ["node", "Server.js"]
+CMD ["node", "Server/Server.js"]
