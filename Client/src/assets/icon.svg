@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">URL Buddy icon — chain link with spark</title>
+  <desc id="desc">A stylized short-link chain with a sparkle and rounded shield-like background, in blue-teal gradient.</desc>
+
+  <defs>
+    <linearGradient id="g1" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#4f46e5"/>
+      <stop offset="1" stop-color="#06b6d4"/>
+    </linearGradient>
+
+    <radialGradient id="g2" cx="30%" cy="30%" r="70%">
+      <stop offset="0" stop-color="rgba(255,255,255,0.28)"/>
+      <stop offset="1" stop-color="rgba(255,255,255,0)"/>
+    </radialGradient>
+
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#001827" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+
+  <rect x="2" y="2" width="60" height="60" rx="12" fill="url(#g1)" filter="url(#shadow)"/>
+
+  <rect x="4" y="4" width="56" height="28" rx="10" fill="url(#g2)" opacity="0.35"/>
+
+  <g transform="translate(8,12) rotate(-15 16 16)">
+    <path d="M12 22c-3.3 0-6-2.7-6-6 0-3.3 2.7-6 6-6h8c3.3 0 6 2.7 6 6 0 3.3-2.7 6-6 6"
+          fill="none" stroke="#ffffff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
+    <path d="M18 22c0 2.2-1.8 4-4 4s-4-1.8-4-4" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" opacity="0.18"/>
+  </g>
+
+  <g transform="translate(18,12) rotate(15 16 16)">
+    <path d="M36 22c3.3 0 6-2.7 6-6 0-3.3-2.7-6-6-6h-8c-3.3 0-6 2.7-6 6 0 3.3 2.7 6 6 6"
+          fill="none" stroke="#ffffff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
+    <path d="M30 22c0 2.2 1.8 4 4 4s4-1.8 4-4" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" opacity="0.18"/>
+  </g>
+
+  <path d="M24 20 C26.5 23 30 23 33 20" fill="none" stroke="#ffffff" stroke-width="3.4" stroke-linecap="round"/>
+
+  <g transform="translate(42,8) rotate(-12)">
+    <path d="M0 0 L2.8 6.5 L9 8.3 L2.8 10.1 L0 16.6 L-2.8 10.1 L-9 8.3 L-2.8 6.5 Z"
+          fill="#fff" opacity="0.95" transform="scale(0.9) translate(6,-2)"/>
+    <circle cx="0" cy="0" r="0.8" fill="#fff" opacity="0.9" transform="translate(10,2)"/>
+  </g>
+
+  <rect x="2.5" y="2.5" width="59" height="59" rx="12" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+
+  <ellipse cx="32" cy="38" rx="12" ry="4.5" fill="rgba(0,0,0,0.08)" />
+
+</svg>
