@@ -27,4 +27,11 @@ jobs:
           cp -r Client/dist Server/Public || true
 
       - name: Run tests
+        env:
+          DB_URL: ${{ secrets.DB_URL }}
+          ENV: ${{ secrets.ENV }}
+          DEV: ${{ secrets.DEV }}
+          PORT: ${{ secrets.PORT }}
+          URL: ${{ secrets.URL }}
+
         run: npm test
