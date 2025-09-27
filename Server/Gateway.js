@@ -54,7 +54,7 @@ class Gateway {
         });
 
         server.post("/api/log", (req, res)=> {
-            if(!req.body?.message){
+            if(!req.body?.message||!req.body){
                 res.status(400).json({error: "RequestError | Missing [message] Parameter"});
                 return;
             };
