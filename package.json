@@ -4,8 +4,8 @@
   "description": "URL Shortener built with Express, PostgreSQL, React, and NodeJS",
   "main": "Server/Server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "cd Client && npm run build && cd && cd Desktop/Projects/URL-Buddy"
+    "test": "npx jest",
+    "build": "cd Client && npm install && npm run build && cd && cd Desktop/Projects/URL-Buddy"
   },
   "repository": {
     "type": "git",
@@ -18,12 +18,17 @@
   },
   "homepage": "https://github.com/ItsHisoka17/URL-Buddy#readme",
   "dependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/supertest": "^6.0.3",
     "body-parser": "^2.2.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
+    "jest": "^30.1.3",
     "pg": "^8.16.3",
-    "pg-types": "^4.1.0"
+    "pg-types": "^4.1.0",
+    "supertest": "^7.1.4",
+    "ts-jest": "^29.4.4"
   }
 }

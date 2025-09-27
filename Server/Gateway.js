@@ -1,19 +1,18 @@
 const cors = require("cors");
 const cookies = require("cookie-parser");
-const Constants = require("./Constants/Constants");
+const { ENV, URL} = require("./Constants/Constants");
 const express = require("express");
 const { join } = require("path");
 const log = require("./Utils/log");
 const generateString = require("./Utils/generateString");
 const Postgre = require("./Database/Postgre");
-const URL = Constants.URL;
-const ENV = Constants.ENV;
 
 class Gateway {
 
     constructor(server){
         this.server = server;
         this.postgre = new Postgre();
+        this.server.Gateway = this;
         server.use(cookies());
         server.use(cors({
             origin: URL,
@@ -21,6 +20,7 @@ class Gateway {
         }));
         server.use(express.json());
         this.start();
+
         server.post("/api/createGateway", async (req, res)=> {
             try {
                 let data = req.body;
@@ -112,7 +112,9 @@ class Gateway {
                     };
                 };
                 res.status(200).json(result);
-            }
+            } else {
+                res.status(200).json({exists:false});
+            };
             } catch (e) {
                 res.status(500).json({error: "API Error", status: 500});
                 console.error(e);
@@ -181,6 +183,7 @@ class Gateway {
                 res.redirect("/");
             };
         });
+
         async function del(){
             let data = await this.postgre.update({
                 data: {
@@ -214,10 +217,12 @@ class Gateway {
         };
         del = del.bind(this);
         del().catch(()=>{});
-        setInterval(async ()=> {
+
+        this.delInterval = setInterval(async ()=> {
             await del();
         }, 5*60*1000);
     };
+   
 };
 
 module.exports = Gateway;

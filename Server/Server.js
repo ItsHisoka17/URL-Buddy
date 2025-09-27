@@ -5,8 +5,13 @@ const log = require("./Utils/log");
 
 new Gateway(server);
 
-server.listen(PORT, ()=> {
-    log({
-        message: `${ENV} - Server Running: ${PORT}`
+if (require.main===module){
+    server.listen(PORT, ()=> {
+        log({
+            message: `${ENV} - Server Running: ${PORT}`
+        });
     });
-});
+};
+
+
+module.exports = server;

@@ -14,6 +14,10 @@ const Constants = {
         info: "\x1b[36m",
         warn: "\x1b[33m", 
         error: "\x1b[31m"
+    },
+    ROUTES: {
+        API: "/api",
+        APIROUTES: ["/checkExists", "/log", "/createGateway", "/checkPath/:path", "/:path"]
     }
 };
 
