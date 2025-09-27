@@ -5,7 +5,7 @@
   "main": "Server/Server.js",
   "scripts": {
     "test": "npx jest",
-    "build": "cd Client && npm install && npm run build && cd && cd Desktop/Projects/URL-Buddy"
+    "build": "cd Client && npm install && npm run build"
   },
   "repository": {
     "type": "git",
