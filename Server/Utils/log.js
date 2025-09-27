@@ -20,6 +20,9 @@ function log({message, level="info", logToConsole=true, dir="server"}){
     };
     let date = formatDate();
     let file = path.join(process.cwd(), "logs", `${dir}.log`);
+    if (!fs.existsSync(path.join(process.cwd(), "logs"))){
+        return;
+    };
     if (!fs.existsSync(file)){
         fs.writeFileSync(file, `[INFO] - ${date} | File created at ${file}\n`);
         console.info(`${COLORS["info"]}[INFO] - ${date} | File created at ${file}`);
